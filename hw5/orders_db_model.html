@@ -3,7 +3,7 @@
 <ul><li><a href="#clients"><b>clients</b></a></li>
 <li><a href="#orders"><b>orders</b></a></li>
 <li><a href="#dishes"><b>dishes</b></a></li>
-<li><a href="#order_line"><b>order_line</b></a></li>
+<li><a href="#order_lines"><b>order_lines</b></a></li>
 <li><a href="#discounts"><b>discounts</b></a></li>
 <li><a href="#waiters"><b>waiters</b></a></li>
 <li><a href="#restaurant_tables"><b>restaurant_tables</b></a></li>
@@ -31,7 +31,7 @@
 
 <table><thead><tr class="header"><th align="left">Name</th><th align="left">Columns</th><th align="left">Data type</th><th align="left">Description</th></tr></thead><tbody>
 
-<tr><td>discount_id_idx</td><td><code>discount_id</code></td><td>INDEX</td><td> </td></tr>
+<tr><td>discount_id_idx</td><td><code>discount_id</code></td><td>INDEX</td><td>Индекс по типам скидок для клиентов</td></tr>
 <tr><td>PRIMARY</td><td><code>phone_number</code>, <code>client_name</code></td><td>PRIMARY</td><td> </td></tr>
 </tbody></table><a href="#d1_doc_gen_contents">To contents</a>
 
@@ -45,7 +45,7 @@
 
 <table><thead><tr class="header"><th align="left">Column</th><th align="left">Data type</th><th align="left">Attribute</th><th align="left">Defualt</th><th align="left">Description</th></tr></thead><tbody>
 
-<tr><td><code>order_id</code></td><td>INT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL</td><td> </td><td>Идентификатор заказа. Количество заказов также может быть большим, поэтому поле типа INT. Не должно быть отрицательным<br />High cardinality</td></tr>
+<tr><td><code>order_id</code></td><td>BIGINT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL</td><td> </td><td>Идентификатор заказа. Количество заказов также может быть большим, поэтому поле типа INT. Не должно быть отрицательным<br />High cardinality</td></tr>
 <tr><td><code>booking_id</code></td><td>BIGINT</td><td>NOT NULL</td><td> </td><td> FK in column <code>booking_id</code> in table <a href="#booking"><code>booking</code></a>.</td></tr>
 <tr><td><code>client_id</code></td><td>INT</td><td>NOT NULL</td><td> </td><td>Идентификатор клиента. Количество возможных вариантов 2*(2^32). Не должно быть отрицательным.<br />Low cardinality<br /><br />FK in column <code>client_id</code> in table <a href="#clients"><code>clients</code></a>.</td></tr>
 <tr><td><code>table_id</code></td><td>TINYINT</td><td>NOT NULL</td><td> </td><td>Low cardinality<br /><br />FK in column <code>table_id</code> in table <a href="#restaurant_tables"><code>restaurant_tables</code></a>.</td></tr>
@@ -62,11 +62,11 @@
 <table><thead><tr class="header"><th align="left">Name</th><th align="left">Columns</th><th align="left">Data type</th><th align="left">Description</th></tr></thead><tbody>
 
 <tr><td>PRIMARY</td><td><code>order_id</code></td><td>PRIMARY</td><td> </td></tr>
-<tr><td>waiter_id_idx</td><td><code>waiter_id</code></td><td>INDEX</td><td> </td></tr>
-<tr><td>table_id_idx</td><td><code>table_id</code></td><td>INDEX</td><td> </td></tr>
-<tr><td>payment_method_id_idx</td><td><code>payment_method_id</code></td><td>INDEX</td><td> </td></tr>
-<tr><td>client_id_idx</td><td><code>client_id</code></td><td>INDEX</td><td> </td></tr>
-<tr><td>fk_orders_booking_idx</td><td><code>booking_id</code></td><td>INDEX</td><td> </td></tr>
+<tr><td>waiter_id_idx</td><td><code>waiter_id</code></td><td>INDEX</td><td>Индекс для выборки по официантам</td></tr>
+<tr><td>table_id_idx</td><td><code>table_id</code></td><td>INDEX</td><td>Индекс для выборки по столикам и их резервированию</td></tr>
+<tr><td>payment_method_id_idx</td><td><code>payment_method_id</code></td><td>INDEX</td><td>Индекс по методам оплаты</td></tr>
+<tr><td>client_id_idx</td><td><code>client_id</code></td><td>INDEX</td><td>Индекс по клиентам, для быстрой выборки клиентов</td></tr>
+<tr><td>fk_orders_booking_idx</td><td><code>booking_id</code></td><td>INDEX</td><td>Индекс по номерам резервирования</td></tr>
 </tbody></table><a href="#d1_doc_gen_contents">To contents</a>
 
 <h2 id="dishes"> Table: <code>dishes</code></h2>
@@ -91,7 +91,7 @@
 <tr><td>PRIMARY</td><td><code>dish_id</code></td><td>PRIMARY</td><td> </td></tr>
 </tbody></table><a href="#d1_doc_gen_contents">To contents</a>
 
-<h2 id="order_line"> Table: <code>order_line</code></h2>
+<h2 id="order_lines"> Table: <code>order_lines</code></h2>
 
 <h3>Description:</h3>
 
@@ -101,7 +101,7 @@
 
 <table><thead><tr class="header"><th align="left">Column</th><th align="left">Data type</th><th align="left">Attribute</th><th align="left">Defualt</th><th align="left">Description</th></tr></thead><tbody>
 
-<tr><td><code>order_line_id</code></td><td>BIGINT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL</td><td> </td><td>Строка в заказе, их количество может быть очень большим, поэтому используется поле типа BIGINT. Не должно быть отрицательным<br />High cardinality</td></tr>
+<tr><td><code>order_lines_id</code></td><td>BIGINT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL</td><td> </td><td>Строка в заказе, их количество может быть очень большим, поэтому используется поле типа BIGINT. Не должно быть отрицательным<br />High cardinality</td></tr>
 <tr><td><code>order_id</code></td><td>INT</td><td>NOT NULL</td><td> </td><td>Low cardinality<br /><br />FK in column <code>order_id</code> in table <a href="#orders"><code>orders</code></a>.</td></tr>
 <tr><td><code>dish_id</code></td><td>SMALLINT</td><td>NOT NULL</td><td> </td><td>Low cardinality<br /><br />FK in column <code>dish_id</code> in table <a href="#dishes"><code>dishes</code></a>.</td></tr>
 <tr><td><code>count_item</code></td><td>DECIMAL</td><td>NOT NULL</td><td><code>1.00</code></td><td>Количество возможных позиций одного блюда в заказе. Дробное, с одним знаком после запятой. Не может быть больше чем 99999,9.  Не должно быть отрицательным. Поскольку это поле необходимо для точного расчета суммы заказа, используется тип поля DECIMAL<br />Low cardinality</td></tr>
@@ -111,9 +111,9 @@
 
 <table><thead><tr class="header"><th align="left">Name</th><th align="left">Columns</th><th align="left">Data type</th><th align="left">Description</th></tr></thead><tbody>
 
-<tr><td>PRIMARY</td><td><code>order_line_id</code></td><td>PRIMARY</td><td> </td></tr>
-<tr><td>order_id_idx</td><td><code>order_id</code></td><td>INDEX</td><td> </td></tr>
-<tr><td>dish_id_idx</td><td><code>dish_id</code></td><td>INDEX</td><td> </td></tr>
+<tr><td>PRIMARY</td><td><code>order_lines_id</code></td><td>PRIMARY</td><td> </td></tr>
+<tr><td>order_id_idx</td><td><code>order_id</code></td><td>INDEX</td><td>Индекс по номерам заказов, может быть достаточно обширным</td></tr>
+<tr><td>dish_id_idx</td><td><code>dish_id</code></td><td>INDEX</td><td>Индекс по блюдам, также может быть большим</td></tr>
 </tbody></table><a href="#d1_doc_gen_contents">To contents</a>
 
 <h2 id="discounts"> Table: <code>discounts</code></h2>
@@ -127,7 +127,7 @@
 <table><thead><tr class="header"><th align="left">Column</th><th align="left">Data type</th><th align="left">Attribute</th><th align="left">Defualt</th><th align="left">Description</th></tr></thead><tbody>
 
 <tr><td><code>discount_id</code></td><td>TINYINT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL</td><td> </td><td>Количество возможных вариантов скидок скорее всего не превысит 100, но при этом и не должно быть отрицательным<br />High cardinality</td></tr>
-<tr><td><code>discount_method</code></td><td>TINYTEXT</td><td></td><td> </td><td>Описание каждого варианта скидки может уложиться в 255 символов.<br />Normal cardinality</td></tr>
+<tr><td><code>discount_method</code></td><td>TINYTEXT</td><td></td><td> </td><td>Описание каждого варианта скидки может уложиться в 255 символов. Может быть Null<br />Normal cardinality</td></tr>
 <tr><td><code>discount_value</code></td><td>TINYINT</td><td>NOT NULL</td><td> </td><td>Значение скидки применяемое к данному методу. Используется для денежных расчетов, тип поля TINYINT. Normal cardinality.<br />Указывается значение налога  от 0 до 100%.</td></tr>
 </tbody></table>
 
@@ -135,7 +135,7 @@
 
 <table><thead><tr class="header"><th align="left">Name</th><th align="left">Columns</th><th align="left">Data type</th><th align="left">Description</th></tr></thead><tbody>
 
-<tr><td>PRIMARY</td><td><code>discount_id</code></td><td>PRIMARY</td><td> </td></tr>
+<tr><td>PRIMARY</td><td><code>discount_id</code></td><td>PRIMARY</td><td>Основной индекс discount_id  по умолчанию для поиска скидок</td></tr>
 </tbody></table><a href="#d1_doc_gen_contents">To contents</a>
 
 <h2 id="waiters"> Table: <code>waiters</code></h2>
@@ -193,8 +193,8 @@
 
 <table><thead><tr class="header"><th align="left">Column</th><th align="left">Data type</th><th align="left">Attribute</th><th align="left">Defualt</th><th align="left">Description</th></tr></thead><tbody>
 
-<tr><td><code>pm_id</code></td><td>TINYINT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL</td><td> </td><td>Количество возможных методов оплаты не может превысить ста (100). Не должно быть отрицательным.<br />High cardinality</td></tr>
-<tr><td><code>pm_name</code></td><td>TINYTEXT</td><td></td><td> </td><td>Минимально допустимое поле для описания метода оплаты. Должно быть уникальным.<br />High cardinality</td></tr>
+<tr><td><code>pm_id</code></td><td>TINYINT</td><td>PRIMARY, AUTO INCREMENTS, NOT NULL, UNIQUE</td><td> </td><td>Количество возможных методов оплаты не может превысить ста (100). Не должно быть отрицательным.<br />High cardinality</td></tr>
+<tr><td><code>pm_name</code></td><td>TINYTEXT</td><td>NOT NULL, UNIQUE</td><td> </td><td>Минимально допустимое поле для описания метода оплаты. Должно быть уникальным.<br />High cardinality</td></tr>
 <tr><td><code>pm_tax</code></td><td>TINYINT</td><td>NOT NULL</td><td> </td><td>Размер налоговой ставки для выбранного метода оплаты.<br />Может отличаться в случае наличного или безналичного расчета - в этом случае может добавляться комиссия банка.<br />Ставка не может быть отрицательной, normal cardinality, тип поля TINYINT. Указывается значение налога  от 0 до 100%.</td></tr>
 </tbody></table>
 
@@ -203,6 +203,8 @@
 <table><thead><tr class="header"><th align="left">Name</th><th align="left">Columns</th><th align="left">Data type</th><th align="left">Description</th></tr></thead><tbody>
 
 <tr><td>PRIMARY</td><td><code>pm_id</code></td><td>PRIMARY</td><td> </td></tr>
+<tr><td>pm_id_UNIQUE</td><td><code>pm_id</code></td><td>UNIQUE</td><td>Метод оплаты должен быть уникальным</td></tr>
+<tr><td>payment_name_UNIQUE</td><td><code>pm_name</code></td><td>UNIQUE</td><td>Имя метода оплаты также должно быть уникальным</td></tr>
 </tbody></table><a href="#d1_doc_gen_contents">To contents</a>
 
 <h2 id="booking"> Table: <code>booking</code></h2>
