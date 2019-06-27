@@ -29,10 +29,15 @@ docker run -p <your_free_port>:3306 --name <container_name> -d <image_name>
 
 #### auth data
 
+
 **user:** root
+
 **password:** otus
+
 **ip:** 0.0.0.0
+
 **port:** 3306
+
 
 You should change this option in `Dockerfile`
 
@@ -47,13 +52,19 @@ mysql -uroot -p -h 0.0.0.0 -P <your_free_port>
 
 Use SetUP new `Connection` with next option:
 
+
 **Server:** localhost
+
 **Port:** <your_free_port>
+
 **Username:** root
+
 **Password:** otus
+
 
 Then open `Driver Settings -> Connection Properties`, and add two `User Properties`
 
 
 **allowPublicKeyRetrieval: true**
+
 **useSSL: false**
