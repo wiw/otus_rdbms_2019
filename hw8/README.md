@@ -1,4 +1,7 @@
-database: 		voip
-port: 			3306
-username: 		otus_aivankin
-password: 		123456789
+# The empty schema of Cafe/Restaurant database in docker images
+
+> contains:
+    > `cafe_db.sql`
+    > `Dockerfile`
+    > README.MD - this RTD
+

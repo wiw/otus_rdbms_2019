@@ -14,7 +14,7 @@ SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,N
 -- -----------------------------------------------------
 -- Schema cafe_db
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `cafe_db` DEFAULT CHARACTER SET utf8mb4 ;
+CREATE DATABASE IF NOT EXISTS `cafe_db` DEFAULT CHARACTER SET utf8 ;
 USE `cafe_db` ;
 
 -- -----------------------------------------------------
@@ -22,23 +22,27 @@ USE `cafe_db` ;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cafe_db`.`discounts` (
   `discount_id` TINYINT(100) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Количество возможных вариантов скидок скорее всего не превысит 100, но при этом и не должно быть отрицательным\nHigh cardinality',
-  `discount_method` TINYTEXT CHARACTER SET 'utf8' NULL COMMENT 'Описание каждого варианта скидки может уложиться в 255 символов. Может быть Null\nNormal cardinality',
+  `discount_method` VARCHAR(1000) NULL COMMENT 'Описание каждого варианта скидки может уложиться в 255 символов. Может быть Null\nNormal cardinality',
   `discount_value` TINYINT(100) UNSIGNED NOT NULL COMMENT 'Значение скидки применяемое к данному методу. Используется для денежных расчетов, тип поля TINYINT. Normal cardinality.\nУказывается значение налога  от 0 до 100%.',
   PRIMARY KEY (`discount_id`) COMMENT 'Основной индекс discount_id  по умолчанию для поиска скидок')
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
 -- Table `cafe_db`.`clients`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cafe_db`.`clients` (
-  `phone_number` VARCHAR(100) COLLATE 'Default Collation' NOT NULL COMMENT 'Номер телефона с кодом страны без \"+\". Вместе с именем клиента используется как идентификатор при посещении и бронировании. Тип поля - строка.\nHigh cardinality',
-  `client_name` VARCHAR(4000) CHARACTER SET 'utf8' NOT NULL COMMENT 'ФИО клиента, используется как идентификатор вместе с номером телефона. Normal cardinality.',
-  `client_id` INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Количество клиентов может быть большое, но не должно быть отрицательным или равно Null, поэтому тип поля INT с количеством вариантов 2*(2^32)\nHigh cardinality.',
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `client_id` INT UNSIGNED NOT NULL COMMENT 'Количество клиентов может быть большое, но не должно быть отрицательным или равно Null, поэтому тип поля INT с количеством вариантов 2*(2^32)\nHigh cardinality.',
+  `client_name` VARCHAR(300) NOT NULL COMMENT 'ФИО клиента, используется как идентификатор вместе с номером телефона. Normal cardinality.',
+  `phone_number` VARCHAR(100) NOT NULL COMMENT 'Номер телефона с кодом страны без \"+\". Вместе с именем клиента используется как идентификатор при посещении и бронировании. Тип поля - строка.\nHigh cardinality',
   `discount_id` TINYINT(100) UNSIGNED NOT NULL COMMENT 'Low cardinality',
   INDEX `discount_id_idx` (`discount_id` ASC) COMMENT 'Индекс по типам скидок для клиентов' VISIBLE,
-  PRIMARY KEY (`phone_number`, `client_name`))
-ENGINE = InnoDB;
+  INDEX `clients_id_idx` (`phone_number`, `client_name`),
+  PRIMARY KEY ( `id` ))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -46,10 +50,11 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cafe_db`.`waiters` (
   `waiter_id` MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор официанта. Не может быть отрицательным. Максимальное значение 16777215. С учетом большой \"текучки\" кадров и сохранения данных о всех сотрудниках\nHigh cardinality',
-  `waiter_name` VARCHAR(1000) CHARACTER SET 'utf8' NOT NULL COMMENT 'Для полного имени официанта достаточно 1000 символов в кодировке UTF8\nNormal  cardinality',
-  `waiter_status` ENUM('уволен', 'работает', 'в отпуске', 'на больничном', 'в декретном отпуске', 'на курсах повышения квалификации') COLLATE 'Default Collation' NOT NULL DEFAULT 'работает' COMMENT 'Статус официанта как работника. Тип поля ENUM.\nВозможные варианты: \'уволен\', \'работает\', \'в отпуске\', \'на больничном\', \'в декретном отпуске\', \'на курсах повышения квалификации\'\n',
+  `waiter_name` VARCHAR(1000) NOT NULL COMMENT 'Для полного имени официанта достаточно 1000 символов в кодировке UTF8\nNormal  cardinality',
+  `waiter_status` ENUM('уволен', 'работает', 'в отпуске', 'на больничном', 'в декретном отпуске', 'на курсах повышения квалификации') NOT NULL DEFAULT 'работает' COMMENT 'Статус официанта как работника. Тип поля ENUM.\nВозможные варианты: \'уволен\', \'работает\', \'в отпуске\', \'на больничном\', \'в декретном отпуске\', \'на курсах повышения квалификации\'\n',
   PRIMARY KEY (`waiter_id`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -58,10 +63,11 @@ ENGINE = InnoDB;
 CREATE TABLE IF NOT EXISTS `cafe_db`.`restaurant_tables` (
   `table_id` TINYINT(255) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Количество столиков даже в больших ресторанах не превышает 200. Для текущей задачи 255 идентификаторов столов достаточно. Идентификатор не должен быть отрицательным\nHigh  cardinality',
   `seats_number` TINYINT(255) UNSIGNED NOT NULL COMMENT 'Количество доступных мест. Поскольку столы могут быть достаточно обширными, то количество мест ограничено до 255. Не должно быть отрицательным\nLow  cardinality',
-  `status` ENUM('reserved', 'busy', 'free') NOT NULL DEFAULT 1 COMMENT 'Свободен (1) столик или занят (0). Low cardinality. Тип поля TINYINT(1)',
+  `status` ENUM('reserved', 'busy', 'free') NOT NULL DEFAULT 'free' COMMENT 'Свободен ("free") столик или занят ("busy"). Low cardinality. Тип поля TINYINT(1)',
   PRIMARY KEY (`table_id`),
   INDEX `table_status_idx` (`status` ASC) COMMENT 'Индекс нужен для выборки и поиска свободных столиков' VISIBLE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -69,23 +75,26 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cafe_db`.`payment_methods` (
   `pm_id` TINYINT(100) UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Количество возможных методов оплаты не может превысить ста (100). Не должно быть отрицательным.\nHigh cardinality',
-  `pm_name` TINYTEXT CHARACTER SET 'utf8' NOT NULL COMMENT 'Минимально допустимое поле для описания метода оплаты. Должно быть уникальным.\nHigh cardinality',
+  `pm_name` VARCHAR(200) NOT NULL COMMENT 'Минимально допустимое поле для описания метода оплаты. Должно быть уникальным.\nHigh cardinality',
   `pm_tax` TINYINT(100) UNSIGNED NOT NULL COMMENT 'Размер налоговой ставки для выбранного метода оплаты.\nМожет отличаться в случае наличного или безналичного расчета - в этом случае может добавляться комиссия банка. \nСтавка не может быть отрицательной, normal cardinality, тип поля TINYINT. Указывается значение налога  от 0 до 100%.',
   PRIMARY KEY (`pm_id`),
   UNIQUE INDEX `pm_id_UNIQUE` (`pm_id` ASC) COMMENT 'Метод оплаты должен быть уникальным' VISIBLE,
   UNIQUE INDEX `payment_name_UNIQUE` (`pm_name` ASC) COMMENT 'Имя метода оплаты также должно быть уникальным' VISIBLE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
 -- Table `cafe_db`.`booking`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cafe_db`.`booking` (
-  `booking_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Идентификатор бронирования столика. На одно бронирование может быть много отдельных заказов. High cardinality',
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `booking_id` BIGINT UNSIGNED NOT NULL COMMENT 'Идентификатор бронирования столика. На одно бронирование может быть много отдельных заказов. High cardinality',
   `table_id` TINYINT(255) UNSIGNED NOT NULL,
-  `phone_number` VARCHAR(100) COLLATE 'Default Collation' NOT NULL,
-  `client_name` VARCHAR(4000) CHARACTER SET 'utf8' NOT NULL,
-  PRIMARY KEY (`booking_id`),
+  `phone_number` VARCHAR(100) NOT NULL,
+  `client_name` VARCHAR(300) NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `booking_id_idx` (`booking_id`),
   INDEX `table_id_idx` (`table_id` ASC) VISIBLE,
   INDEX `fk_booking_client_phone_idx` (`phone_number` ASC, `client_name` ASC) VISIBLE)
 ENGINE = InnoDB
@@ -112,7 +121,8 @@ CREATE TABLE IF NOT EXISTS `cafe_db`.`orders` (
   INDEX `payment_method_id_idx` (`payment_method_id` ASC) COMMENT 'Индекс по методам оплаты' VISIBLE,
   INDEX `client_id_idx` (`client_id` ASC) COMMENT 'Индекс по клиентам, для быстрой выборки клиентов' VISIBLE,
   INDEX `fk_orders_booking_idx` (`booking_id` ASC) COMMENT 'Индекс по номерам резервирования' VISIBLE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -120,10 +130,11 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `cafe_db`.`dishes` (
   `dish_id` SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Число возможных блюд не превысит 65536 позиций, не должно быть отрицательным\nHigh cardinality',
-  `dish_name` VARCHAR(4000) CHARACTER SET 'utf8' NOT NULL COMMENT 'Для описания поля наименования блюда достаточно 4000 символов кодировке UTF8\nNormal cardinality',
-  `dish_cost` DECIMAL(10,4) UNSIGNED NOT NULL DEFAULT 0,0000 COMMENT 'Стоимость блюда хранится в поле типа DECIMAL с десятью знаками до запятой и четырьмя знаками после. Не должно быть отрицательным\nNormal cardinality',
+  `dish_name` VARCHAR(4000) NOT NULL COMMENT 'Для описания поля наименования блюда достаточно 4000 символов кодировке UTF8\nNormal cardinality',
+  `dish_cost` DECIMAL(10,4) UNSIGNED NOT NULL DEFAULT 0.0000 COMMENT 'Стоимость блюда хранится в поле типа DECIMAL с десятью знаками до запятой и четырьмя знаками после. Не должно быть отрицательным\nNormal cardinality',
   PRIMARY KEY (`dish_id`))
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 -- -----------------------------------------------------
@@ -137,7 +148,8 @@ CREATE TABLE IF NOT EXISTS `cafe_db`.`order_lines` (
   PRIMARY KEY (`order_lines_id`),
   INDEX `order_id_idx` (`order_id` ASC) COMMENT 'Индекс по номерам заказов, может быть достаточно обширным' VISIBLE,
   INDEX `dish_id_idx` (`dish_id` ASC) COMMENT 'Индекс по блюдам, также может быть большим' VISIBLE)
-ENGINE = InnoDB;
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
 
 
 SET SQL_MODE=@OLD_SQL_MODE;
